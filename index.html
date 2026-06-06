@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الإدارة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo+Play:wght@200..1000&family=Cairo:wght@200..1000&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="الإدارة">
+    <meta name="theme-color" content="#09090b">
+    <!-- أيقونة الشاشة الرئيسية لـ iOS -->
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+
+    <!-- شاشة تسجيل الدخول -->
+    <div id="loginScreen">
+        <div class="login-logo">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <rect width="48" height="48" rx="14" fill="var(--accent)" opacity="0.15"/>
+                <path d="M14 34V20L24 14L34 20V34H28V26H20V34H14Z" fill="var(--accent)"/>
+            </svg>
+        </div>
+        <h2>نظام الإدارة</h2>
+        <p class="login-subtitle">سجّل دخولك للمتابعة</p>
+        <div class="input-group">
+            <label>اسم المستخدم</label>
+            <input type="text" id="username" placeholder="أدخل اسم المستخدم" autocomplete="username">
+        </div>
+        <div class="input-group">
+            <label>كلمة المرور</label>
+            <div style="position:relative;">
+                <input type="password" id="password" placeholder="أدخل كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter') login()">
+                <button type="button" onclick="togglePassword()" class="btn-icon-pass" id="passToggle">
+                    <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+            </div>
+        </div>
+        <button class="btn-primary" onclick="login()">دخول</button>
+        <p id="loginError" class="login-error">بيانات الدخول غير صحيحة</p>
+    </div>
+
+    <!-- واجهة النظام -->
+    <div class="container" id="mainApp">
+        <div class="header">
+            <div class="header-info">
+                <div class="header-text">
+                    <h3 style="margin: 0;">مرحباً، <span id="currentUserDisplay" class="text-accent"></span></h3>
+                    <span class="text-secondary">لوحة التحكم الرئيسية</span>
+                </div>
+                <div class="stock-header-box">
+                    <span>المخزون:</span>
+                    <strong id="headerStockDisplay">0</strong>
+                    <span class="text-secondary" style="font-size:11px;">كرتون</span>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div id="syncStatus" class="sync-badge sync-ok">
+                    <span class="sync-dot"></span>
+                    <span id="syncText">متزامن</span>
+                </div>
+                <button class="btn-danger" onclick="logout()" style="width: auto; padding: 8px 16px; font-size: 13px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    خروج
+                </button>
+            </div>
+        </div>
+
+        <!-- القائمة الرئيسية -->
+        <div id="mainMenu" class="menu-grid">
+            <div class="menu-card" onclick="openSection('dashboardSection')">
+                <div class="menu-icon" style="background: rgba(59,130,246,0.12); color: #3b82f6;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><polyline points="7 9 12 4 17 9"/></svg>
+                </div>
+                <h3>الأرباح والإحصائيات</h3>
+                <p>متابعة حركة العمل والمركز المالي</p>
+            </div>
+            <div class="menu-card" onclick="openSection('invoiceSection')">
+                <div class="menu-icon" style="background: rgba(16,185,129,0.12); color: #10b981;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                </div>
+                <h3>إصدار فاتورة</h3>
+                <p>إنشاء فاتورة بيع جديدة</p>
+            </div>
+            <div class="menu-card" onclick="openSection('historySection')">
+                <div class="menu-icon" style="background: rgba(168,85,247,0.12); color: #a855f7;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/></svg>
+                </div>
+                <h3>سجل المبيعات</h3>
+                <p>مراجعة الفواتير والحركات السابقة</p>
+            </div>
+            <div class="menu-card" onclick="openSection('debtsSection')">
+                <div class="menu-icon" style="background: rgba(239,68,68,0.12); color: #ef4444;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <h3>إدارة الديون</h3>
+                <p>متابعة الأرصدة وتسديد الدفعات</p>
+            </div>
+            <div class="menu-card" onclick="openSection('stockSection')">
+                <div class="menu-icon" style="background: rgba(245,158,11,0.12); color: #f59e0b;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                </div>
+                <h3>المخزون والتالف</h3>
+                <p>إدارة الكميات المتاحة وتسجيل التوالف</p>
+            </div>
+        </div>
+
+        <!-- ================= الواجهات ================= -->
+
+        <!-- 1. واجهة الأرباح والإحصائيات -->
+        <div id="dashboardSection" class="section-content">
+            <button class="back-btn" onclick="goBack()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:6px;"><polyline points="15 18 9 12 15 6"/></svg>
+                العودة للقائمة
+            </button>
+            <div class="stats-grid">
+                <div class="stat-card stat-blue">
+                    <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+                    <h4>الكمية المتوفرة (كارتون)</h4>
+                    <h1 id="stockTotalDisplay">0</h1>
+                </div>
+                <div class="stat-card stat-red">
+                    <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                    <h4>إجمالي الديون النشطة</h4>
+                    <h1 class="loss" id="debtsTotalDisplay">0</h1>
+                </div>
+                <div class="stat-card stat-green">
+                    <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                    <h4>صافي الأرباح (دينار)</h4>
+                    <h1 class="profit" id="netProfitDisplay">0</h1>
+                </div>
+                <div class="stat-card stat-orange">
+                    <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                    <h4>قيمة التالف (دينار)</h4>
+                    <h1 class="loss" id="damagesTotalDisplay">0</h1>
+                </div>
+            </div>
+            <div class="card-panel" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <h4 style="margin-bottom:4px; color:var(--text-secondary); font-size:13px;">متوسط تكلفة الشراء الحالية</h4>
+                    <h2 style="margin:0; color:var(--text-primary);"><span id="avgCostDisplay">0</span> <span style="font-size:16px; color:var(--text-secondary);">دينار / كارتون</span></h2>
+                </div>
+                <div>
+                    <h4 style="margin-bottom:4px; color:var(--text-secondary); font-size:13px;">إجمالي المبيعات</h4>
+                    <h2 style="margin:0; color:var(--text-primary);"><span id="totalSalesCountDisplay">0</span> <span style="font-size:16px; color:var(--text-secondary);">فاتورة</span></h2>
+                </div>
+                <div>
+                    <h4 style="margin-bottom:4px; color:var(--text-secondary); font-size:13px;">إجمالي الإيرادات</h4>
+                    <h2 style="margin:0; color:var(--accent);"><span id="totalRevenueDisplay">0</span> <span style="font-size:16px; color:var(--text-secondary);">دينار</span></h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. واجهة إصدار فاتورة -->
+        <div id="invoiceSection" class="section-content">
+            <button class="back-btn" onclick="goBack()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:6px;"><polyline points="15 18 9 12 15 6"/></svg>
+                العودة للقائمة
+            </button>
+            
+            <div class="card-panel invoice-container">
+                <h3 style="margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; display:flex; align-items:center; gap:10px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                    فاتورة بيع جديدة
+                </h3>
+                
+                <div class="input-group">
+                    <label>اسم العميل / المقهى</label>
+                    <input type="text" id="customerName" placeholder="أدخل اسم العميل">
+                </div>
+                
+                <div class="flex-row">
+                    <div class="input-group">
+                        <label>الكمية (كارتون)</label>
+                        <input type="number" id="saleQty" placeholder="0" oninput="calcTotal()" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label>سعر البيع للوحدة</label>
+                        <input type="number" id="salePrice" placeholder="0" oninput="calcTotal()" min="0">
+                    </div>
+                </div>
+
+                <div class="invoice-total">
+                    <p>إجمالي الفاتورة</p>
+                    <h1 id="totalDisplayUI">0 <span style="font-size: 16px; color: var(--text-secondary);">دينار</span></h1>
+                    <input type="hidden" id="totalPrice">
+                </div>
+
+                <div class="flex-row">
+                    <div class="input-group">
+                        <label>المبلغ المستلم (الواصل)</label>
+                        <input type="number" id="paidAmount" placeholder="أدخل المبلغ المستلم" oninput="calcRemaining()" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>المبلغ المتبقي (الدين)</label>
+                        <input type="text" id="remainingAmount" placeholder="0" disabled class="remaining-field">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>رقم هاتف العميل</label>
+                    <input type="text" id="customerID" placeholder="أدخل رقم هاتف العميل">
+                </div>
+
+                <button class="btn-primary" style="margin-top: 10px;" onclick="addSale()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:6px;"><polyline points="20 6 9 17 4 12"/></svg>
+                    حفظ واعتماد الفاتورة
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. واجهة سجل المبيعات -->
+        <div id="historySection" class="section-content">
+            <button class="back-btn" onclick="goBack()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:6px;"><polyline points="15 18 9 12 15 6"/></svg>
+                العودة للقائمة
+            </button>
+            
+            <div class="card-panel table-responsive">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+                    <h3 style="margin: 0;">سجل العمليات</h3>
+                    <div class="search-wrap">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" style="position:absolute; right:12px; top:50%; transform:translateY(-50%);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="searchInput" placeholder="بحث باسم العميل..." oninput="filterSales()" style="padding: 10px 36px 10px 14px; margin:0; width:220px;">
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>العميل / التاريخ</th>
+                            <th>الكمية</th>
+                            <th>الإجمالي</th>
+                            <th>المستلم</th>
+                            <th>المتبقي</th>
+                            <th>رقم الهاتف</th>
+                            <th>حذف</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. واجهة الديون -->
+        <div id="debtsSection" class="section-content">
+            <button class="back-btn" onclick="goBack()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:6px;"><polyline points="15 18 9 12 15 6"/></svg>
+                العودة للقائمة
+            </button>
+            <div class="card-panel table-responsive">
+                <h3 style="margin-top: 0;">الأرصدة المستحقة (الديون)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>العميل / التاريخ</th>
+                            <th>الرصيد المتبقي</th>
+                            <th>تسديد دفعة</th>
+                            <th>إجراء</th>
+                            <th>رقم الهاتف</th>
+                        </tr>
+                    </thead>
+                    <tbody id="debtsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 5. واجهة المخزون والتالف -->
+        <div id="stockSection" class="section-content">
+            <button class="back-btn" onclick="goBack()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:6px;"><polyline points="15 18 9 12 15 6"/></svg>
+                العودة للقائمة
+            </button>
+            <div class="flex-row" style="flex-wrap: wrap;">
+                <div class="card-panel" style="flex: 1; min-width: 300px;">
+                    <h3 style="margin-top: 0; margin-bottom: 20px; display:flex; align-items:center; gap:8px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        إضافة مخزون (مشتريات)
+                    </h3>
+                    <div class="input-group">
+                        <label>الكمية المضافة (كارتون)</label>
+                        <input type="number" id="addQty" placeholder="0" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label>تكلفة الوحدة (سعر الشراء)</label>
+                        <input type="number" id="addCost" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>سعر البيع المقترح</label>
+                        <input type="number" id="currentAvgCost" placeholder="0" min="0">
+                    </div>
+                    <button class="btn-primary" onclick="addStock()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        تسجيل الكمية
+                    </button>
+                </div>
+
+                <div class="card-panel" style="flex: 1; min-width: 300px;">
+                    <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--danger); display:flex; align-items:center; gap:8px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                        تسجيل فاقد أو تالف
+                    </h3>
+                    <div class="input-group">
+                        <label>الكمية التالفة (كارتون)</label>
+                        <input type="number" id="damageQty" placeholder="0" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label>الملاحظات / السبب</label>
+                        <input type="text" id="damageReason" placeholder="توضيح السبب...">
+                    </div>
+                    <button class="btn-danger" onclick="addDamage()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-left:6px;"><polyline points="20 6 9 17 4 12"/></svg>
+                        اعتماد الخصم من المخزون
+                    </button>
+                </div>
+            </div>
+
+            <!-- سجل المشتريات والتوالف -->
+            <div class="card-panel table-responsive" style="margin-top: 0;">
+                <h3 style="margin-top: 0;">سجل التوالف</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>الكمية التالفة</th>
+                            <th>القيمة المفقودة</th>
+                            <th>الملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="damagesTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+          .then(() => console.log('SW registered'))
+          .catch(e => console.warn('SW failed:', e));
+      }
+    </script>
+</body>
+</html>
